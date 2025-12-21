@@ -42,7 +42,7 @@ class RenameView(discord.ui.View):
 
 
 		def check(m):
-		return m.author == interaction.user
+			return m.author == interaction.user
 
 
 		msg = await bot.wait_for("message", check=check)
@@ -84,3 +84,4 @@ def add_to_radarr(title):
 
 
 bot.run(DISCORD_TOKEN)
+
