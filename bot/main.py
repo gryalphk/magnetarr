@@ -4,6 +4,17 @@ from discord import app_commands
 import requests
 import re
 
+import os
+
+DISCORD_TOKEN = os.environ["DISCORD_TOKEN"]
+QBIT_HOST = os.environ["QBIT_HOST"]
+QBIT_USER = os.environ["QBIT_USER"]
+QBIT_PASS = os.environ["QBIT_PASS"]
+
+RADARR_HOST = os.environ["RADARR_HOST"]
+RADARR_API_KEY = os.environ["RADARR_API_KEY"]
+RADARR_ROOT_FOLDER = os.environ["RADARR_ROOT_FOLDER"]
+
 
 MAGNET_RE = re.compile(r"magnet:\?xt=urn:btih:[a-zA-Z0-9]+")
 
@@ -81,6 +92,7 @@ def add_to_radarr(title):
 		headers={"X-Api-Key": RADARR_API_KEY},
 		json=payload
 	)
+
 
 
 bot.run(DISCORD_TOKEN)
