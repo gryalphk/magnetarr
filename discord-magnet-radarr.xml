@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Container version="2">
+<Name>Discord Magnet → qBittorrent → Radarr</Name>
+<Repository>yourdockerhub/discord-magnet-radarr:latest</Repository>
+<Registry>https://hub.docker.com</Registry>
+<Network>bridge</Network>
+<Privileged>false</Privileged>
+<Support>https://github.com/yourrepo/discord-magnet-radarr</Support>
+<Project>https://github.com/yourrepo/discord-magnet-radarr</Project>
+<Overview>
+Discord bot that listens for magnet links, optionally renames torrents,
+sends them to qBittorrent with category 'radarr', and creates Radarr movies
+as Unmonitored (no auto-search).
+</Overview>
+
+
+<Category>MediaAutomation</Category>
+<WebUI></WebUI>
+<Icon>https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/discord.png</Icon>
+
+
+<Config Name="Discord Bot Token" Target="DISCORD_TOKEN" Default="" Mode="" Description="Discord bot token" Type="Variable" Display="always" Required="true" Mask="true" />
+
+
+<Config Name="Discord Guild ID" Target="DISCORD_GUILD_ID" Default="" Mode="" Description="Discord server (guild) ID" Type="Variable" Display="always" Required="true" />
+
+
+<Config Name="qBittorrent Host" Target="QBIT_HOST" Default="http://qbittorrent:8080" Mode="" Description="qBittorrent WebUI URL" Type="Variable" Display="always" Required="true" />
+
+
+<Config Name="qBittorrent Username" Target="QBIT_USER" Default="admin" Mode="" Description="qBittorrent username" Type="Variable" Display="always" Required="true" />
+
+
+<Config Name="qBittorrent Password" Target="QBIT_PASS" Default="adminadmin" Mode="" Description="qBittorrent password" Type="Variable" Display="always" Required="true" Mask="true" />
+
+
+<Config Name="Radarr Host" Target="RADARR_HOST" Default="http://radarr:7878" Mode="" Description="Radarr base URL" Type="Variable" Display="always" Required="true" />
+
+
+<Config Name="Radarr API Key" Target="RADARR_API_KEY" Default="" Mode="" Description="Radarr API key" Type="Variable" Display="always" Required="true" Mask="true" />
+
+
+<Config Name="Radarr Root Folder" Target="RADARR_ROOT_FOLDER" Default="/movies" Mode="" Description="Root folder path used by Radarr" Type="Variable" Display="always" Required="true" />
+
+
+<Config Name="Timezone" Target="TZ" Default="UTC" Mode="" Description="Container timezone" Type="Variable" Display="always" Required="true" />
+
+
+<RestartPolicy>unless-stopped</RestartPolicy>
+</Container>
