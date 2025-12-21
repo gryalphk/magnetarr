@@ -1,6 +1,7 @@
 version: "3.8"
 services:
-discord-magnet:
-build: .
-env_file: .env
-restart: unless-stopped
+  discord-magnet:
+    build: .
+    env_file: .env
+
+    restart: unless-stopped
