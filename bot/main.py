@@ -114,8 +114,8 @@ async def magnet_movie(
     await interaction.response.defer(ephemeral=True)
 
     try:
-        qb_add_magnet(magnet, name=name, category="radarr")
         notify_radarr(imdb_id)
+        qb_add_magnet(magnet, name=name, category="radarr")
 
         await interaction.followup.send(
             "✅ Movie magnet added successfully.",
@@ -146,8 +146,8 @@ async def magnet_tv(
     await interaction.response.defer(ephemeral=True)
 
     try:
-        qb_add_magnet(magnet, name=name, category="sonarr")
         notify_sonarr(imdb_id)
+        qb_add_magnet(magnet, name=name, category="sonarr")
 
         await interaction.followup.send(
             "✅ TV series magnet added successfully.",
@@ -206,3 +206,4 @@ async def on_ready():
     print(f"✅ Logged in as {client.user}")
 
 client.run(DISCORD_TOKEN)
+
