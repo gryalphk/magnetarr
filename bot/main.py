@@ -58,6 +58,71 @@ def qb_add_magnet(magnet, name=None, category=None):
 # -----------------------
 # Arr Helpers
 # -----------------------
+def add_movie_to_radarr(imdb_id):
+    if not imdb_id:
+        return
+
+    headers = {"X-Api-Key": RADARR_API_KEY}
+
+    # Lookup movie
+    lookup = requests.get(
+        f"{RADARR_URL}/api/v3/movie/lookup",
+        headers=headers,
+        params={"imdbId": imdb_id},
+        timeout=10,
+    ).json()
+
+    if not lookup:
+        raise Exception("Movie not found in Radarr lookup")
+
+    movie = lookup[0]
+    movie.update({
+        "qualityProfileId": 1,
+        "rootFolderPath": "/media",
+        "monitored": False,
+        "addOptions": {"searchForMovie": True},
+    })
+
+    requests.post(
+        f"{RADARR_URL}/api/v3/movie",
+        headers=headers,
+        json=movie,
+        timeout=10,
+    )
+
+def add_series_to_sonarr(imdb_id):
+    if not imdb_id:
+        return
+
+    headers = {"X-Api-Key": SONARR_API_KEY}
+
+    # Lookup series
+    lookup = requests.get(
+        f"{SONARR_URL}/api/v3/series/lookup",
+        headers=headers,
+        params={"term": imdb_id},
+        timeout=10,
+    ).json()
+
+    if not lookup:
+        raise Exception("Series not found in Sonarr lookup")
+
+    series = lookup[0]
+    series.update({
+        "qualityProfileId": 1,
+        "rootFolderPath": "/tv",
+        "monitored": False,
+        "seasonFolder": True,
+        "addOptions": {"searchForMissingEpisodes": True},
+    })
+
+    requests.post(
+        f"{SONARR_URL}/api/v3/series",
+        headers=headers,
+        json=series,
+        timeout=10,
+    )
+
 def notify_radarr(imdb_id):
     if not imdb_id:
         return
@@ -114,6 +179,7 @@ async def magnet_movie(
     await interaction.response.defer(ephemeral=True)
 
     try:
+        add_series_to_radarr(imdb_id)
         notify_radarr(imdb_id)
         qb_add_magnet(magnet, name=name, category="radarr")
 
@@ -146,6 +212,7 @@ async def magnet_tv(
     await interaction.response.defer(ephemeral=True)
 
     try:
+        add_series_to_sonarr(imdb_id)
         notify_sonarr(imdb_id)
         qb_add_magnet(magnet, name=name, category="sonarr")
 
@@ -206,4 +273,5 @@ async def on_ready():
     print(f"✅ Logged in as {client.user}")
 
 client.run(DISCORD_TOKEN)
+
 
