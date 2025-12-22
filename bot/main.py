@@ -179,7 +179,7 @@ async def magnet_movie(
     await interaction.response.defer(ephemeral=True)
 
     try:
-        add_series_to_radarr(imdb_id)
+        add_movie_to_radarr(imdb_id)
         notify_radarr(imdb_id)
         qb_add_magnet(magnet, name=name, category="radarr")
 
@@ -273,5 +273,6 @@ async def on_ready():
     print(f"✅ Logged in as {client.user}")
 
 client.run(DISCORD_TOKEN)
+
 
 
