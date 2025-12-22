@@ -1,8 +1,3 @@
-Here’s a **ready-to-use `README.md`** you can drop directly into your GitHub repository.
-It’s written to match **exactly** what your updated `magnetarr` bot does and how it’s deployed.
-
----
-
 # Magnetarr Discord Bot
 
 Magnetarr is a lightweight **Discord slash-command bot** that sends **magnet links** to **qBittorrent** and optionally registers the media in **Radarr** or **Sonarr** using an IMDb ID.
