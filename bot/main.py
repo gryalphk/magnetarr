@@ -1,278 +1,155 @@
 import os
 import discord
 from discord import app_commands
-import requests
+import aiohttp
+import asyncio
 
-# -----------------------
-# Environment Variables
-# -----------------------
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+INTENTS = discord.Intents.default()
+CLIENT = discord.Client(intents=INTENTS)
+TREE = app_commands.CommandTree(CLIENT)
+
 DISCORD_GUILD_ID = int(os.getenv("DISCORD_GUILD_ID"))
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN ")
 
-QBITTORRENT_URL = os.getenv("QBITTORRENT_URL")
-QBITTORRENT_USER = os.getenv("QBITTORRENT_USER")
-QBITTORRENT_PASS = os.getenv("QBITTORRENT_PASS")
+QB_URL = os.getenv("QB_URL")
+QB_USER = os.getenv("QB_USER")
+QB_PASS = os.getenv("QB_PASS")
 
 RADARR_URL = os.getenv("RADARR_URL")
-RADARR_API_KEY = os.getenv("RADARR_API_KEY")
+RADARR_KEY = os.getenv("RADARR_KEY")
 
 SONARR_URL = os.getenv("SONARR_URL")
-SONARR_API_KEY = os.getenv("SONARR_API_KEY")
+SONARR_KEY = os.getenv("SONARR_KEY")
 
-# -----------------------
-# Discord Client
-# -----------------------
-intents = discord.Intents.default()
-client = discord.Client(intents=intents)
-tree = app_commands.CommandTree(client)
 
-GUILD = discord.Object(id=DISCORD_GUILD_ID)
 
-# -----------------------
-# qBittorrent Helpers
-# -----------------------
-def qb_login(session):
-    session.post(
-        f"{QBITTORRENT_URL}/api/v2/auth/login",
-        data={"username": QBITTORRENT_USER, "password": QBITTORRENT_PASS},
-        timeout=10,
-    )
+# ======================================================
+# =============== QBITTORRENT HELPERS ==================
+# ======================================================
+async def qb_login(session):
+    payload = {"username": QB_USER, "password": QB_PASS}
+    await session.post(f"{QB_URL}/api/v2/auth/login", data=payload)
 
-def qb_add_magnet(magnet, name=None, category=None):
-    with requests.Session() as session:
-        qb_login(session)
-        payload = {
-            "urls": magnet,
-        }
-        if name:
-            payload["rename"] = name
-        if category:
-            payload["category"] = category
 
-        session.post(
-            f"{QBITTORRENT_URL}/api/v2/torrents/add",
-            data=payload,
-            timeout=10,
-        )
+async def qb_add_torrent(session, magnet, category, rename=None):
+    data = {"urls": magnet, "category": category}
 
-# -----------------------
-# Arr Helpers
-# -----------------------
-def add_movie_to_radarr(imdb_id):
+    if rename:
+        data["rename"] = rename
+
+    await session.post(f"{QB_URL}/api/v2/torrents/add", data=data)
+
+
+# ======================================================
+# ================= RADARR HELPERS =====================
+# ======================================================
+async def radarr_add_unmonitored(session, imdb_id):
     if not imdb_id:
         return
 
-    headers = {"X-Api-Key": RADARR_API_KEY}
+    params = {"apikey": RADARR_KEY}
+    payload = {
+        "imdbId": imdb_id,
+        "monitored": False
+    }
 
-    # Lookup movie
-    lookup = requests.get(
-        f"{RADARR_URL}/api/v3/movie/lookup",
-        headers=headers,
-        params={"imdbId": imdb_id},
-        timeout=10,
-    ).json()
+    await session.post(f"{RADARR_URL}/api/v3/movie", params=params, json=payload)
 
-    if not lookup:
-        raise Exception("Movie not found in Radarr lookup")
 
-    movie = lookup[0]
-    movie.update({
-        "qualityProfileId": 1,
-        "rootFolderPath": "/media",
-        "monitored": False,
-        "addOptions": {"searchForMovie": True},
-    })
-
-    requests.post(
-        f"{RADARR_URL}/api/v3/movie",
-        headers=headers,
-        json=movie,
-        timeout=10,
-    )
-
-def add_series_to_sonarr(imdb_id):
+# ======================================================
+# ================= SONARR HELPERS =====================
+# ======================================================
+async def sonarr_add_unmonitored(session, imdb_id):
     if not imdb_id:
         return
 
-    headers = {"X-Api-Key": SONARR_API_KEY}
+    params = {"apikey": SONARR_KEY}
+    payload = {
+        "imdbId": imdb_id,
+        "monitored": False
+    }
 
-    # Lookup series
-    lookup = requests.get(
-        f"{SONARR_URL}/api/v3/series/lookup",
-        headers=headers,
-        params={"term": imdb_id},
-        timeout=10,
-    ).json()
+    await session.post(f"{SONARR_URL}/api/v3/series", params=params, json=payload)
 
-    if not lookup:
-        raise Exception("Series not found in Sonarr lookup")
 
-    series = lookup[0]
-    series.update({
-        "qualityProfileId": 1,
-        "rootFolderPath": "/tv",
-        "monitored": False,
-        "seasonFolder": True,
-        "addOptions": {"searchForMissingEpisodes": True},
-    })
+# ======================================================
+# ================= DISCORD COMMANDS ===================
+# ======================================================
 
-    requests.post(
-        f"{SONARR_URL}/api/v3/series",
-        headers=headers,
-        json=series,
-        timeout=10,
-    )
-
-def notify_radarr(imdb_id):
-    if not imdb_id:
-        return
-
-    requests.post(
-        f"{RADARR_URL}/api/v3/movie",
-        headers={"X-Api-Key": RADARR_API_KEY},
-        json={
-            "imdbId": imdb_id,
-            "qualityProfileId": 1,
-            "rootFolderPath": "/movies",
-            "monitored": False,
-            "addOptions": {"searchForMovie": True},
-        },
-        timeout=10,
-    )
-
-def notify_sonarr(imdb_id):
-    if not imdb_id:
-        return
-
-    requests.post(
-        f"{SONARR_URL}/api/v3/series",
-        headers={"X-Api-Key": SONARR_API_KEY},
-        json={
-            "imdbId": imdb_id,
-            "qualityProfileId": 1,
-            "rootFolderPath": "/tv",
-            "monitored": False,
-            "addOptions": {"searchForMissingEpisodes": True},
-        },
-        timeout=10,
-    )
-
-# -----------------------
-# Commands
-# -----------------------
-@tree.command(
-    name="magnet_movie",
-    description="Add a movie magnet (Radarr)",
-    guild=GUILD,
-)
+@TREE.command(name="magnet_movie", description="Add magnet to Radarr + qBittorrent")
 @app_commands.describe(
     magnet="Magnet link",
-    name="Optional torrent rename",
-    imdb_id="Optional IMDb ID for Radarr",
+    name="Optional rename for torrent",
+    imdb_id="Optional IMDB ID"
 )
-async def magnet_movie(
-    interaction: discord.Interaction,
-    magnet: str,
-    name: str | None = None,
-    imdb_id: str | None = None,
-):
-    await interaction.response.defer(ephemeral=True)
+async def magnet_movie(interaction, magnet: str, name: str | None = None, imdb_id: str | None = None):
 
-    try:
-        add_movie_to_radarr(imdb_id)
-        notify_radarr(imdb_id)
-        qb_add_magnet(magnet, name=name, category="radarr")
+    if interaction.guild_id != DISCORD_GUILD_ID:
+        return await interaction.response.send_message("Not allowed here.", ephemeral=True)
 
-        await interaction.followup.send(
-            "✅ Movie magnet added successfully.",
-            ephemeral=True,
-        )
-    except Exception as e:
-        await interaction.followup.send(
-            f"❌ Failed to add movie magnet:\n```{e}```",
-            ephemeral=True,
-        )
+    async with aiohttp.ClientSession() as session:
+        await radarr_add_unmonitored(session, imdb_id)
+        await qb_login(session)
+        await qb_add_torrent(session, magnet, "radarr", name)
 
-@tree.command(
-    name="magnet_tv",
-    description="Add a TV series magnet (Sonarr)",
-    guild=GUILD,
-)
+    await interaction.response.send_message("🎬 Movie magnet processed!")
+
+
+@TREE.command(name="magnet_series", description="Add magnet to Sonarr + qBittorrent")
 @app_commands.describe(
     magnet="Magnet link",
-    name="Optional torrent rename",
-    imdb_id="Optional IMDb ID for Sonarr",
+    name="Optional rename for torrent",
+    imdb_id="Optional IMDB ID"
 )
-async def magnet_tv(
-    interaction: discord.Interaction,
-    magnet: str,
-    name: str | None = None,
-    imdb_id: str | None = None,
-):
-    await interaction.response.defer(ephemeral=True)
+async def magnet_series(interaction, magnet: str, name: str | None = None, imdb_id: str | None = None):
 
-    try:
-        add_series_to_sonarr(imdb_id)
-        notify_sonarr(imdb_id)
-        qb_add_magnet(magnet, name=name, category="sonarr")
+    if interaction.guild_id != DISCORD_GUILD_ID:
+        return await interaction.response.send_message("Not allowed here.", ephemeral=True)
 
-        await interaction.followup.send(
-            "✅ TV series magnet added successfully.",
-            ephemeral=True,
-        )
-    except Exception as e:
-        await interaction.followup.send(
-            f"❌ Failed to add TV magnet:\n```{e}```",
-            ephemeral=True,
-        )
+    async with aiohttp.ClientSession() as session:
+        await sonarr_add_unmonitored(session, imdb_id)
+        await qb_login(session)
+        await qb_add_torrent(session, magnet, "sonarr", name)
 
-@tree.command(
-    name="magnet_help",
-    description="Show help for magnet commands",
-    guild=GUILD,
-)
-async def magnet_help(interaction: discord.Interaction):
-    embed = discord.Embed(
-        title="📌 Magnetarr Commands",
-        description="Use these commands to send magnet links to qBittorrent with Arr integration.",
-        color=0x00BFFF,
-    )
+    await interaction.response.send_message("📺 Series magnet processed!")
 
-    embed.add_field(
-        name="/magnet_movie",
-        value=(
-            "**Usage:**\n"
-            "`/magnet_movie magnet:<link> [name] [imdb_id]`\n\n"
-            "• Adds a movie magnet\n"
-            "• Optional rename\n"
-            "• Optional IMDb ID → Radarr"
-        ),
-        inline=False,
-    )
 
-    embed.add_field(
-        name="/magnet_tv",
-        value=(
-            "**Usage:**\n"
-            "`/magnet_tv magnet:<link> [name] [imdb_id]`\n\n"
-            "• Adds a TV series magnet\n"
-            "• Optional rename\n"
-            "• Optional IMDb ID → Sonarr"
-        ),
-        inline=False,
-    )
+@TREE.command(name="help_magnets", description="Explain bot commands")
+async def help_magnets(interaction):
 
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    text = """
+**Magnet Bot Help**
 
-# -----------------------
-# Startup
-# -----------------------
-@client.event
+`/magnet_movie`
+→ Sends magnet to Radarr + qBittorrent
+Arguments:
+• magnet (required)
+• name (optional)
+• imdb_id (optional)
+
+`/magnet_series`
+→ Sends magnet to Sonarr + qBittorrent
+Arguments:
+• magnet (required)
+• name (optional)
+• imdb_id (optional)
+"""
+    await interaction.response.send_message(text)
+
+
+# ======================================================
+# ================= BOT STARTUP ========================
+# ======================================================
+
+@CLIENT.event
 async def on_ready():
-    await tree.sync(guild=GUILD)
-    print(f"✅ Logged in as {client.user}")
+    try:
+        guild = discord.Object(id=DISCORD_GUILD_ID)
+        synced = await TREE.sync()
+        print(f"Bot logged in as {CLIENT.user}")
+        print(f"synced {len(synced)} command to guild {guild.id}")
 
-client.run(DISCORD_TOKEN)
+    except Exception as e:
+        print(f"error syncing commands {e}")
 
-
-
+CLIENT.run(DISCORD_TOKEN)
