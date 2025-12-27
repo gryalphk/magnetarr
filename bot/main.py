@@ -83,7 +83,8 @@ async def sonarr_add_unmonitored(session, imdb_id):
     imdb_id="Optional IMDB ID"
 )
 async def magnet_movie(interaction, magnet: str, name: str | None = None, imdb_id: str | None = None):
-
+    print(f"G.ID {DISCORD_GUILD_ID}")
+    print(f"G.ID {interaction.guild_id}")
     if interaction.guild_id != DISCORD_GUILD_ID:
         return await interaction.response.send_message("Not allowed here.", ephemeral=True)
 
@@ -102,7 +103,8 @@ async def magnet_movie(interaction, magnet: str, name: str | None = None, imdb_i
     imdb_id="Optional IMDB ID"
 )
 async def magnet_series(interaction, magnet: str, name: str | None = None, imdb_id: str | None = None):
-
+    print(f"G.ID {DISCORD_GUILD_ID}")
+    print(f"G.ID {interaction.guild_id}")
     if interaction.guild_id != DISCORD_GUILD_ID:
         return await interaction.response.send_message("Not allowed here.", ephemeral=True)
 
@@ -153,3 +155,4 @@ async def on_ready():
         print(f"error syncing commands {e}")
 
 CLIENT.run(DISCORD_TOKEN)
+
