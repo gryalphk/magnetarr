@@ -1,7 +1,21 @@
-version: "3.8"
-services:
-  discord-magnet:
-    build: .
-    env_file: .env
-    restart: unless-stopped
+version: "3.9"
 
+services:
+
+  discord-magnet-bot:
+    build: .
+    container_name: magnetbot
+    restart: unless-stopped
+    environment:
+      DISCORD_TOKEN: "YOUR_DISCORD_TOKEN"
+      DISCORD_GUILD_ID: "YOUR_GUILD_ID"
+
+      QB_URL: "http://qbittorrent:8080"
+      QB_USER: "admin"
+      QB_PASS: "adminadmin"
+
+      RADARR_URL: "http://radarr:7878"
+      RADARR_KEY: "YOUR_RADARR_API_KEY"
+
+      SONARR_URL: "http://sonarr:8989"
+      SONARR_KEY: "YOUR_SONARR_API_KEY"
