@@ -4,7 +4,7 @@ services:
 
   discord-magnet-bot:
     build: .
-    container_name: magnetbot
+    container_name: magnetarr
     restart: unless-stopped
     environment:
       DISCORD_TOKEN: "YOUR_DISCORD_TOKEN"
@@ -19,3 +19,4 @@ services:
 
       SONARR_URL: "http://sonarr:8989"
       SONARR_KEY: "YOUR_SONARR_API_KEY"
+
