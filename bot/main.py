@@ -17,44 +17,61 @@ QB_PASS = os.getenv("QB_PASS")
 
 RADARR_URL = os.getenv("RADARR_URL")
 RADARR_KEY = os.getenv("RADARR_KEY")
+RADARR_ROOT = os.getenv("RADARR_ROOT")
 
 SONARR_URL = os.getenv("SONARR_URL")
 SONARR_KEY = os.getenv("SONARR_KEY")
-
-
 
 # ======================================================
 # =============== QBITTORRENT HELPERS ==================
 # ======================================================
 async def qb_login(session):
-    payload = {"username": QB_USER, "password": QB_PASS}
-    await session.post(f"{QB_URL}/api/v2/auth/login", data=payload)
+    r = await session.post(
+        f"{QB_URL}/api/v2/auth/login",
+        data={"username": QB_USER, "password": QB_PASS}
+    )
+
+    text = await r.text()
+
+    if r.status != 200:
+        text = await r.text()
+        raise Exception(f"qBittorrent login failed: {r.status} — {text}")
 
 
 async def qb_add_torrent(session, magnet, category, rename=None):
-    data = {"urls": magnet, "category": category}
+    data = {
+        "urls": magnet,
+        "category": category
+    }
 
     if rename:
         data["rename"] = rename
 
-    await session.post(f"{QB_URL}/api/v2/torrents/add", data=data)
-
+    await qb_login(session)
+    async with session.post(f"{QB_URL}/api/v2/torrents/add", data=data) as resp:
+        return resp.status == 200
 
 # ======================================================
 # ================= RADARR HELPERS =====================
 # ======================================================
-async def radarr_add_unmonitored(session, imdb_id):
+async def radarr_add_unmonitored(session, imdb_id, name):
     if not imdb_id:
         return
 
-    params = {"apikey": RADARR_KEY}
+    params = {"X-Api-Key": RADARR_KEY}
+
     payload = {
-        "imdbId": imdb_id,
-        "monitored": False
+        "title": name,
+        "qualityProfileId": 1,
+        "rootFolderPath": RADARR_ROOT,
+        "addOptions": {"searchForMovie": False},
+        "monitored": False,
+        "imdbId": None,
+        "tmdbId": imdb_id
     }
 
-    await session.post(f"{RADARR_URL}/api/v3/movie", params=params, json=payload)
-
+    async with session.post(f"{RADARR_URL}/api/v3/movie", json=payload, headers=params) as resp:
+        return resp.status in (200, 201)
 
 # ======================================================
 # ================= SONARR HELPERS =====================
@@ -80,21 +97,20 @@ async def sonarr_add_unmonitored(session, imdb_id):
 @app_commands.describe(
     magnet="Magnet link",
     name="Optional rename for torrent",
-    imdb_id="Optional IMDB ID"
+    tmdb_id="Optional TMDB ID"
 )
-async def magnet_movie(interaction, magnet: str, name: str | None = None, imdb_id: str | None = None):
-    print(f"G.ID {DISCORD_GUILD_ID}")
-    print(f"G.ID {interaction.guild_id}")
-    if interaction.guild_id != DISCORD_GUILD_ID:
+async def magnet_movie(interaction, magnet: str, name: str | None = None, tmdb_id: str | None = None):
+
+    if int(interaction.guild_id) != int(DISCORD_GUILD_ID):
         return await interaction.response.send_message("Not allowed here.", ephemeral=True)
 
     async with aiohttp.ClientSession() as session:
-        await radarr_add_unmonitored(session, imdb_id)
+        await radarr_add_unmonitored(session, tmdb_id, name)
         await qb_login(session)
         await qb_add_torrent(session, magnet, "radarr", name)
 
-    await interaction.response.send_message("🎬 Movie magnet processed!")
-
+    #await interaction.response.send_message("🎬 Movie magnet processed!")
+    await interaction.response.send_message(f"🎬 Movie: {name} TMDB ID: {tmdb_id} added!")
 
 @TREE.command(name="magnet_series", description="Add magnet to Sonarr + qBittorrent")
 @app_commands.describe(
@@ -103,8 +119,6 @@ async def magnet_movie(interaction, magnet: str, name: str | None = None, imdb_i
     imdb_id="Optional IMDB ID"
 )
 async def magnet_series(interaction, magnet: str, name: str | None = None, imdb_id: str | None = None):
-    print(f"G.ID {DISCORD_GUILD_ID}")
-    print(f"G.ID {interaction.guild_id}")
     if interaction.guild_id != DISCORD_GUILD_ID:
         return await interaction.response.send_message("Not allowed here.", ephemeral=True)
 
@@ -127,7 +141,7 @@ async def help_magnets(interaction):
 Arguments:
 • magnet (required)
 • name (optional)
-• imdb_id (optional)
+• tmdb_id (optional)
 
 `/magnet_series`
 → Sends magnet to Sonarr + qBittorrent
@@ -155,4 +169,3 @@ async def on_ready():
         print(f"error syncing commands {e}")
 
 CLIENT.run(DISCORD_TOKEN)
-
