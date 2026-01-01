@@ -10,15 +10,13 @@ It is designed to fit cleanly into common **Arr stacks** and works perfectly in 
 
 ## ✨ Features
 
-* 📥 Add **movie** or **TV series** magnets from Discord
-* 🔁 Optional torrent renaming
-* 🎬 Optional IMDb ID integration
-
-  * Movies → **Radarr**
-  * TV Series → **Sonarr**
-* ⚡ Slash commands (Discord Application Commands)
-* 🧭 Guild-scoped commands (instant registration)
-* 🧩 Minimal dependencies, easy to extend
+✔ Uses **Slash Commands** (`/magnet_movie`, `/magnet_series`)  
+✔ Adds magnet links to **qBittorrent** with category  
+✔ Integrates with **Radarr** and **Sonarr**  
+✔ Sets media entries to “Unmonitored”  
+✔ Optional: rename torrent before adding  
+✔ Optional: attach IMDB ID for Radarr/Sonarr detection  
+✔ Docker-ready, easy Unraid deployment
 
 ---
 
@@ -34,7 +32,7 @@ Add a **movie** magnet and optionally notify Radarr.
 | --------- | -------- | ---------------------- |
 | `magnet`  | ✅        | Magnet link            |
 | `name`    | ❌        | Rename torrent         |
-| `imdb_id` | ❌        | IMDb ID sent to Radarr |
+| `tmdb_id` | ❌        | TMDb ID sent to Radarr |
 
 **Example**
 
@@ -44,7 +42,7 @@ Add a **movie** magnet and optionally notify Radarr.
 
 ---
 
-### `/magnet_tv`
+### `/magnet_series`
 
 Add a **TV series** magnet and optionally notify Sonarr.
 
@@ -112,9 +110,10 @@ Create a `.env` file or set the variables in your container:
 DISCORD_TOKEN=your_discord_bot_token
 DISCORD_GUILD_ID=your_discord_server_id
 
-QBITTORRENT_URL=http://qbittorrent:8080
-QBITTORRENT_USER=admin
-QBITTORRENT_PASS=adminadmin
+QB_URL=http://qbittorrent:8080
+QB_USER=admin
+QB_PASS=adminadmin
+RADARR_ROOT =/media
 
 RADARR_URL=http://radarr:7878
 RADARR_API_KEY=radarr_api_key
@@ -171,7 +170,6 @@ No privileged intents are required.
 2. Bot sends magnet link to **qBittorrent**
 3. Torrent is optionally renamed
 4. Torrent category is set:
-
    * `radarr` for movies
    * `sonarr` for TV
-5. IMDb ID (if provided) is sent to Radarr or Sonarr
+5. TMDb ID & Name (if provided) is sent to Radarr or Sonarr
