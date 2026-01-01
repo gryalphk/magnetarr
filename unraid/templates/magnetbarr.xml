@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<Container>
+  <Name>Magnetbarr</Name>
+  <Repository>ghcr.io/gryalphk/magnetarr:latest</Repository>
+  <Registry>https://github.com/gryalphk/magnetarr/pkgs/container/magnetarr</Registry>
+  <Network>bridge</Network>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/gryalphk/magnetarr/issues</Support>
+  <Project>https://github.com/gryalphk/magnetarr</Project>
+  <Overview>
+    Discord bot that listens for magnet links and sends them to qBittorrent with optional Radarr/Sonarr integration. Supports renaming, TMDB metadata, and slash commands for movies and TV.
+  </Overview>
+
+  <Category>Downloaders: Media-Management: Tools:</Category>
+
+  <Environment>
+
+    <Variable>
+      <Name>DISCORD_TOKEN</Name>
+      <Value></Value>
+      <Description>Your Discord bot token</Description>
+      <Mode>rw</Mode>
+    </Variable>
+
+    <Variable>
+      <Name>DISCORD_GUILD_ID</Name>
+      <Value></Value>
+      <Description>Discord server ID where the bot is allowed to run</Description>
+      <Mode>rw</Mode>
+    </Variable>
+
+    <Variable>
+      <Name>QB_URL</Name>
+      <Value>http://localhost:8080</Value>
+      <Description>qBittorrent Web UI URL</Description>
+      <Mode>rw</Mode>
+    </Variable>
+
+    <Variable>
+      <Name>QB_USER</Name>
+      <Value>admin</Value>
+      <Description>qBittorrent username</Description>
+      <Mode>rw</Mode>
+    </Variable>
+
+    <Variable>
+      <Name>QB_PASS</Name>
+      <Value></Value>
+      <Description>qBittorrent password</Description>
+      <Mode>rw</Mode>
+    </Variable>
+
+    <Variable>
+      <Name>RADARR_URL</Name>
+      <Value>http://192.168.0.136:7878</Value>
+      <Description>Radarr base URL</Description>
+      <Mode>rw</Mode>
+    </Variable>
+
+    <Variable>
+      <Name>RADARR_KEY</Name>
+      <Value></Value>
+      <Description>Radarr API Key</Description>
+      <Mode>rw</Mode>
+    </Variable>
+
+    <Variable>
+      <Name>RADARR_ROOT</Name>
+      <Value></Value>
+      <Description>Radarr Root Folder</Description>
+      <Mode>rw</Mode>
+    </Variable>
+
+    <Variable>
+      <Name>SONARR_URL</Name>
+      <Value>http://192.168.0.136:8989</Value>
+      <Description>Sonarr base URL</Description>
+      <Mode>rw</Mode>
+    </Variable>
+
+    <Variable>
+      <Name>SONARR_KEY</Name>
+      <Value></Value>
+      <Description>Sonarr API Key</Description>
+      <Mode>rw</Mode>
+    </Variable>
+
+    <Variable>
+      <Name>SONARR_ROOT</Name>
+      <Value></Value>
+      <Description>Sonarr Root Folder</Description>
+      <Mode>rw</Mode>
+    </Variable>
+
+  </Environment>
+
+  <Data></Data>
+
+  <Config Name="Auto Update" Target="" Default="" Mode="" Description="" Type="Variable" Display="always" Required="false" Mask="false"/>
+
+</Container>
