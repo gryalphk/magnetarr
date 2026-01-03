@@ -113,10 +113,10 @@ DISCORD_GUILD_ID=your_discord_server_id
 QB_URL=http://qbittorrent:8080
 QB_USER=admin
 QB_PASS=adminadmin
-RADARR_ROOT =/media
 
 RADARR_URL=http://radarr:7878
 RADARR_API_KEY=radarr_api_key
+RADARR_ROOT =/media
 
 SONARR_URL=http://sonarr:8989
 SONARR_API_KEY=sonarr_api_key
