@@ -183,22 +183,6 @@ Arguments:
 """
     await interaction.response.send_message(text)
 
-
-# ======================================================
-# ================= BOT STARTUP ========================
-# ======================================================
-
-@CLIENT.event
-async def on_ready():
-    try:
-        guild = discord.Object(id=DISCORD_GUILD_ID)
-        synced = await TREE.sync()
-        print(f"Bot logged in as {CLIENT.user}")
-        print(f"synced {len(synced)} command to guild {guild.id}")
-
-    except Exception as e:
-        print(f"error syncing commands {e}")
-
 @TREE.command(name="tmdb_movie", description="Search TMDB and return the movie ID")
 @app_commands.describe(name="Movie name to search")
 async def tmdb_movie(interaction: discord.Interaction, name: str):
@@ -232,7 +216,24 @@ async def tmdb_movie(interaction: discord.Interaction, name: str):
         ephemeral=True
     )
 
+
+# ======================================================
+# ================= BOT STARTUP ========================
+# ======================================================
+
+@CLIENT.event
+async def on_ready():
+    try:
+        guild = discord.Object(id=DISCORD_GUILD_ID)
+        synced = await TREE.sync()
+        print(f"Bot logged in as {CLIENT.user}")
+        print(f"synced {len(synced)} command to guild {guild.id}")
+
+    except Exception as e:
+        print(f"error syncing commands {e}")
+
 CLIENT.run(DISCORD_TOKEN)
+
 
 
 
