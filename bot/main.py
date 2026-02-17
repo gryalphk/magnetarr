@@ -124,7 +124,7 @@ async def sonarr_add_unmonitored(session, imdb_id):
 # ================= DISCORD COMMANDS ===================
 # ======================================================
 
-@bot.tree.command(name="tmdb_movie", description="Search TMDB and return the movie ID")
+@TREE.command(name="tmdb_movie", description="Search TMDB and return the movie ID")
 @app_commands.describe(name="Movie name to search")
 async def tmdb_movie(interaction: discord.Interaction, name: str):
     params = {
@@ -233,4 +233,5 @@ async def on_ready():
         print(f"error syncing commands {e}")
 
 CLIENT.run(DISCORD_TOKEN)
+
 
