@@ -1,6 +1,8 @@
 import os
 import discord
 from discord import app_commands
+from discord.ext import commands
+import requests
 import aiohttp
 import asyncio
 
@@ -21,6 +23,35 @@ RADARR_ROOT = os.getenv("RADARR_ROOT")
 
 SONARR_URL = os.getenv("SONARR_URL")
 SONARR_KEY = os.getenv("SONARR_KEY")
+
+TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+
+TMDB_SEARCH_URL = "https://api.themoviedb.org/3/search/movie"
+TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
+
+# ======================================================
+# =================== TMDB HELPERS =====================
+# ======================================================
+
+class MovieSelectView(discord.ui.View):
+    def __init__(self, results):
+        super().__init__(timeout=120)
+        self.results = results
+
+        for movie in results:
+            self.add_item(MovieButton(movie))
+
+class MovieButton(discord.ui.Button):
+    def __init__(self, movie):
+        label = f"{movie['title']} ({movie.get('release_date', '????')[:4]})"
+        super().__init__(label=label, style=discord.ButtonStyle.primary)
+        self.movie = movie
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_message(
+            f"🎬 **{self.movie['title']}**\n🆔 **TMDB ID:** `{self.movie['id']}`",
+            ephemeral=True
+        )
 
 # ======================================================
 # =============== QBITTORRENT HELPERS ==================
@@ -92,6 +123,39 @@ async def sonarr_add_unmonitored(session, imdb_id):
 # ======================================================
 # ================= DISCORD COMMANDS ===================
 # ======================================================
+
+@bot.tree.command(name="tmdb_movie", description="Search TMDB and return the movie ID")
+@app_commands.describe(name="Movie name to search")
+async def tmdb_movie(interaction: discord.Interaction, name: str):
+    params = {
+        "api_key": TMDB_API_KEY,
+        "query": name
+    }
+
+    r = requests.get(TMDB_SEARCH_URL, params=params)
+    data = r.json().get("results", [])[:5]
+
+    if not data:
+        await interaction.response.send_message("❌ No results found.", ephemeral=True)
+        return
+
+    embeds = []
+    for movie in data:
+        embed = discord.Embed(
+            title=movie["title"],
+            description=movie.get("overview", "No description"),
+        )
+        if movie.get("poster_path"):
+            embed.set_image(url=TMDB_IMAGE_BASE + movie["poster_path"])
+        embeds.append(embed)
+
+    view = MovieSelectView(data)
+    await interaction.response.send_message(
+        content="Select the correct movie:",
+        embeds=embeds,
+        view=view,
+        ephemeral=True
+    )
 
 @TREE.command(name="magnet_movie", description="Add magnet to Radarr + qBittorrent")
 @app_commands.describe(
@@ -169,3 +233,4 @@ async def on_ready():
         print(f"error syncing commands {e}")
 
 CLIENT.run(DISCORD_TOKEN)
+
