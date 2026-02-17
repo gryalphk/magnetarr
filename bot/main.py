@@ -124,39 +124,6 @@ async def sonarr_add_unmonitored(session, imdb_id):
 # ================= DISCORD COMMANDS ===================
 # ======================================================
 
-@TREE.command(name="tmdb_movie", description="Search TMDB and return the movie ID")
-@app_commands.describe(name="Movie name to search")
-async def tmdb_movie(interaction: discord.Interaction, name: str):
-    params = {
-        "api_key": TMDB_API_KEY,
-        "query": name
-    }
-
-    r = requests.get(TMDB_SEARCH_URL, params=params)
-    data = r.json().get("results", [])[:5]
-
-    if not data:
-        await interaction.response.send_message("❌ No results found.", ephemeral=True)
-        return
-
-    embeds = []
-    for movie in data:
-        embed = discord.Embed(
-            title=movie["title"],
-            description=movie.get("overview", "No description"),
-        )
-        if movie.get("poster_path"):
-            embed.set_image(url=TMDB_IMAGE_BASE + movie["poster_path"])
-        embeds.append(embed)
-
-    view = MovieSelectView(data)
-    await interaction.response.send_message(
-        content="Select the correct movie:",
-        embeds=embeds,
-        view=view,
-        ephemeral=True
-    )
-
 @TREE.command(name="magnet_movie", description="Add magnet to Radarr + qBittorrent")
 @app_commands.describe(
     magnet="Magnet link",
@@ -232,6 +199,40 @@ async def on_ready():
     except Exception as e:
         print(f"error syncing commands {e}")
 
+@TREE.command(name="tmdb_movie", description="Search TMDB and return the movie ID")
+@app_commands.describe(name="Movie name to search")
+async def tmdb_movie(interaction: discord.Interaction, name: str):
+    params = {
+        "api_key": TMDB_API_KEY,
+        "query": name
+    }
+
+    r = requests.get(TMDB_SEARCH_URL, params=params)
+    data = r.json().get("results", [])[:5]
+
+    if not data:
+        await interaction.response.send_message("❌ No results found.", ephemeral=True)
+        return
+
+    embeds = []
+    for movie in data:
+        embed = discord.Embed(
+            title=movie["title"],
+            description=movie.get("overview", "No description"),
+        )
+        if movie.get("poster_path"):
+            embed.set_image(url=TMDB_IMAGE_BASE + movie["poster_path"])
+        embeds.append(embed)
+
+    view = MovieSelectView(data)
+    await interaction.response.send_message(
+        content="Select the correct movie:",
+        embeds=embeds,
+        view=view,
+        ephemeral=True
+    )
+
 CLIENT.run(DISCORD_TOKEN)
+
 
 
