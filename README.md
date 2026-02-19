@@ -1,6 +1,6 @@
 # Magnetarr Discord Bot
 
-Magnetarr is a lightweight **Discord slash-command bot** that sends **magnet links** to **qBittorrent** and optionally registers the media in **Radarr** or **Sonarr** using an IMDb ID.
+Magnetarr is a lightweight **Discord slash-command bot** that sends **magnet links** to **qBittorrent** and optionally registers the media in **Radarr** or **Sonarr** using an TMDb ID.
 
 It is designed to fit cleanly into common **Arr stacks** and works perfectly in **Docker / Unraid / self-hosted environments**.
 
@@ -31,8 +31,7 @@ Add a **movie** magnet and optionally notify Radarr.
 | Name      | Required | Description            |
 | --------- | -------- | ---------------------- |
 | `magnet`  | ✅        | Magnet link            |
-| `name`    | ❌        | Rename torrent         |
-| `tmdb_id` | ❌        | TMDb ID sent to Radarr |
+| `name`    | ✅        | Movie to search        |
 
 **Example**
 
