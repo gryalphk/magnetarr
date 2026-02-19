@@ -1,6 +1,6 @@
 # Magnetarr Discord Bot
 
-Magnetarr is a lightweight **Discord slash-command bot** that sends **magnet links** to **qBittorrent** and optionally registers the media in **Radarr** or **Sonarr** using an TMDb ID.
+Magnetarr is a lightweight **Discord slash-command bot** that sends **magnet links** to **qBittorrent** and registers the media in **Radarr** or **Sonarr** using an TMDb ID.
 
 It is designed to fit cleanly into common **Arr stacks** and works perfectly in **Docker / Unraid / self-hosted environments**.
 
@@ -14,9 +14,9 @@ It is designed to fit cleanly into common **Arr stacks** and works perfectly in 
 ✔ Adds magnet links to **qBittorrent** with category  
 ✔ Integrates with **Radarr** and **Sonarr**  
 ✔ Sets media entries to “Unmonitored”  
-✔ Optional: rename torrent before adding  
-✔ Optional: attach IMDB ID for Radarr/Sonarr detection  
-✔ Docker-ready, easy Unraid deployment
+✔ Searches movies via TMDB
+✔ Displays selectable results with posters
+✔ Automatically cleans and formats titles as Title (Year)
 
 ---
 
@@ -24,7 +24,7 @@ It is designed to fit cleanly into common **Arr stacks** and works perfectly in 
 
 ### `/magnet_movie`
 
-Add a **movie** magnet and optionally notify Radarr.
+Search the movie using the name provided via TMDB and adds the **movie** magnet link to qBitorrent and notify Radarr.
 
 **Arguments**
 
@@ -36,7 +36,7 @@ Add a **movie** magnet and optionally notify Radarr.
 **Example**
 
 ```
-/magnet_movie magnet:magnet:?xt=urn:btih:... name:"Dune (2024)" imdb_id:tt15239678
+/magnet_movie magnet:magnet:?xt=urn:btih:... name:"The Bone Temple"
 ```
 
 ---
@@ -166,9 +166,10 @@ No privileged intents are required.
 ## 🧠 How It Works
 
 1. User runs a slash command in Discord
-2. Bot sends magnet link to **qBittorrent**
-3. Torrent is optionally renamed
-4. Torrent category is set:
+2. Bot searches movie name in TMDB and shows it in a combobox
+3. User selects correct movie
+4. Bot sends magnet link to **qBittorrent** renamed using the selection (in a format of "Name (Year)")
+6. Torrent category is set:
    * `radarr` for movies
    * `sonarr` for TV
-5. TMDb ID & Name (if provided) is sent to Radarr or Sonarr
+7. TMDb ID & Name is sent to Radarr or Sonarr
