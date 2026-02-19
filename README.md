@@ -11,12 +11,12 @@ It is designed to fit cleanly into common **Arr stacks** and works perfectly in 
 ## ✨ Features
 
 ✔ Uses **Slash Commands** (`/magnet_movie`, `/magnet_series`)  
+✔ Searches movie name via TMDB  
+✔ Displays selectable results with posters  
+✔ Automatically cleans and formats titles as Title (Year)  
 ✔ Adds magnet links to **qBittorrent** with category  
 ✔ Integrates with **Radarr** and **Sonarr**  
 ✔ Sets media entries to “Unmonitored”  
-✔ Searches movies via TMDB
-✔ Displays selectable results with posters
-✔ Automatically cleans and formats titles as Title (Year)
 
 ---
 
